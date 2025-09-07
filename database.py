@@ -1,5 +1,6 @@
 import firebase_admin
 from firebase_admin import credentials, firestore
+from fastapi import HTTPException
 import os
 import json
 
@@ -25,5 +26,9 @@ def initialize_firebase():
 initialize_firebase()
 
 def get_firestore_db():
-    # Initialize Firestore client only when needed
-    return firestore.client()
+    try:
+        # Initialize Firestore client only when needed
+        return firestore.client()
+    except Exception as e:
+        print(f"Firestore client error: {e}")
+        raise HTTPException(status_code=500, detail="Database connection failed")
