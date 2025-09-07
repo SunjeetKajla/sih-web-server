@@ -11,63 +11,43 @@ COLLECTION_NAME = 'hazardReports'
 
 @router.post("", response_model=HazardReportResponse)
 async def create_report(report: HazardReportCreate):
-    try:
-        db = get_firestore_db()
-        
-        report_data = {
-            "latitude": report.latitude,
-            "longitude": report.longitude,
-            "type": report.type,
-            "severity": report.severity.value,
-            "status": "pending",
-            "description": report.description,
-            "timestamp": datetime.now(),
-            "updated_at": datetime.now()
-        }
-        
-        doc_ref, doc = db.collection(COLLECTION_NAME).add(report_data)
-        report_data["id"] = doc.id
-        
-        return report_data
-    except Exception as e:
-        print(f"Error creating report: {e}")
-        # Return mock response to prevent frontend errors
-        return {
-            "id": "temp_id",
-            "latitude": report.latitude,
-            "longitude": report.longitude,
-            "type": report.type,
-            "severity": report.severity.value,
-            "status": "pending",
-            "description": report.description,
-            "timestamp": datetime.now(),
-            "updated_at": datetime.now()
-        }
+    db = get_firestore_db()
+    
+    report_data = {
+        "latitude": report.latitude,
+        "longitude": report.longitude,
+        "type": report.type,
+        "severity": report.severity.value,
+        "status": "pending",
+        "description": report.description,
+        "timestamp": datetime.now(),
+        "updated_at": datetime.now()
+    }
+    
+    doc_ref, doc = db.collection(COLLECTION_NAME).add(report_data)
+    report_data["id"] = doc.id
+    
+    return report_data
 
 @router.get("", response_model=List[HazardReportResponse])
 async def get_reports(status: Optional[str] = None, severity: Optional[str] = None):
-    try:
-        db = get_firestore_db()
-        query = db.collection(COLLECTION_NAME).order_by("timestamp", direction="DESCENDING")
-        
-        if status:
-            query = query.where("status", "==", status)
-        if severity:
-            query = query.where("severity", "==", severity)
-        
-        docs = query.stream()
-        reports = []
-        
-        for doc in docs:
-            data = doc.to_dict()
-            data["id"] = doc.id
-            reports.append(data)
-        
-        return reports
-    except Exception as e:
-        print(f"Error fetching reports: {e}")
-        # Return empty list instead of crashing
-        return []
+    db = get_firestore_db()
+    query = db.collection(COLLECTION_NAME).order_by("timestamp", direction="DESCENDING")
+    
+    if status:
+        query = query.where("status", "==", status)
+    if severity:
+        query = query.where("severity", "==", severity)
+    
+    docs = query.stream()
+    reports = []
+    
+    for doc in docs:
+        data = doc.to_dict()
+        data["id"] = doc.id
+        reports.append(data)
+    
+    return reports
 
 @router.get("/{report_id}", response_model=HazardReportResponse)
 async def get_report(report_id: str):

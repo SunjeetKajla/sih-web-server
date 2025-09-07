@@ -1,34 +1,26 @@
 import firebase_admin
 from firebase_admin import credentials, firestore
-from fastapi import HTTPException
 import os
-import json
 
 # Initialize Firebase Admin SDK
-def initialize_firebase():
-    if not firebase_admin._apps:
-        try:
-            # Try file first (simpler for Render)
-            cred_path = 'firebase-config.json'
-            if os.path.exists(cred_path):
-                cred = credentials.Certificate(cred_path)
-                firebase_admin.initialize_app(cred)
-                return True
-            else:
-                print("Firebase config file not found")
-                return False
-        except Exception as e:
-            print(f"Firebase initialization error: {e}")
-            return False
-    return True
+if not firebase_admin._apps:
+    # Option 1: Use service account key file
+    cred_path = os.getenv('FIREBASE_CREDENTIALS_PATH', 'firebase-config.json')
+    if os.path.exists(cred_path):
+        cred = credentials.Certificate(cred_path)
+    else:
+        # Option 2: Use project config (same as React Native app)
+        firebase_config = {
+            "type": "service_account",
+            "project_id": "test-project-5e082",
+            # Add your service account details here
+        }
+        cred = credentials.Certificate(firebase_config)
+    
+    firebase_admin.initialize_app(cred)
 
-# Initialize Firebase when module is imported
-initialize_firebase()
+# Get Firestore client
+db = firestore.client()
 
 def get_firestore_db():
-    try:
-        # Initialize Firestore client only when needed
-        return firestore.client()
-    except Exception as e:
-        print(f"Firestore client error: {e}")
-        raise HTTPException(status_code=500, detail="Database connection failed")
+    return db
