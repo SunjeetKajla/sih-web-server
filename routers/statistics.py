@@ -79,3 +79,18 @@ async def get_severity_breakdown():
     return {
         "breakdown": [{"severity": severity, "count": count} for severity, count in severity_counts.items()]
     }
+
+@router.get("/severity-breakdown")
+async def get_severity_breakdown():
+    db = get_firestore_db()
+    docs = db.collection(COLLECTION_NAME).stream()
+    
+    severity_counts = defaultdict(int)
+    for doc in docs:
+        data = doc.to_dict()
+        severity = data.get('severity', 'low')
+        severity_counts[severity] += 1
+    
+    return {
+        "breakdown": [{"severity": severity, "count": count} for severity, count in severity_counts.items()]
+    }
