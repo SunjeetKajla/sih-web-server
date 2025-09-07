@@ -4,29 +4,26 @@ import os
 import json
 
 # Initialize Firebase Admin SDK
-if not firebase_admin._apps:
-    try:
-        # Try environment variable first (for production)
-        firebase_creds = os.getenv('FIREBASE_CREDENTIALS')
-        if firebase_creds:
-            cred_dict = json.loads(firebase_creds)
-            cred = credentials.Certificate(cred_dict)
-        else:
-            # Fallback to file (for local development)
+def initialize_firebase():
+    if not firebase_admin._apps:
+        try:
+            # Try file first (simpler for Render)
             cred_path = 'firebase-config.json'
             if os.path.exists(cred_path):
                 cred = credentials.Certificate(cred_path)
+                firebase_admin.initialize_app(cred)
+                return True
             else:
-                raise Exception("No Firebase credentials found")
-        
-        firebase_admin.initialize_app(cred)
-    except Exception as e:
-        print(f"Firebase initialization error: {e}")
-        # Initialize with minimal config to prevent crashes
-        firebase_admin.initialize_app()
+                print("Firebase config file not found")
+                return False
+        except Exception as e:
+            print(f"Firebase initialization error: {e}")
+            return False
+    return True
 
-# Get Firestore client
-db = firestore.client()
+# Initialize Firebase when module is imported
+initialize_firebase()
 
 def get_firestore_db():
-    return db
+    # Initialize Firestore client only when needed
+    return firestore.client()
