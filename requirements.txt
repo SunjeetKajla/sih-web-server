@@ -1,0 +1,8 @@
+fastapi>=0.115.2
+uvicorn>=0.24.0
+firebase-admin>=6.4.0
+python-multipart>=0.0.18
+python-socketio>=5.10.0
+python-dotenv>=1.0.0
+anyio>=4.8.0
+starlette>=0.40.0
