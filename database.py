@@ -5,7 +5,7 @@ import os
 # Initialize Firebase Admin SDK
 if not firebase_admin._apps:
     # Option 1: Use service account key file
-    cred_path = os.getenv('FIREBASE_CREDENTIALS_PATH', 'firebase-config.json')
+    cred_path = os.path.join(os.path.dirname(__file__), os.getenv('FIREBASE_CREDENTIALS_PATH', 'firebase-config.json'))
     if os.path.exists(cred_path):
         cred = credentials.Certificate(cred_path)
     else:
