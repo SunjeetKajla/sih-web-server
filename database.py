@@ -5,9 +5,13 @@ import os
 # Initialize Firebase Admin SDK
 if not firebase_admin._apps:
     # Option 1: Use service account key file
-    cred_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'firebase-config.json')
+    cred_path = os.path.join(os.path.dirname(__file__), os.getenv('FIREBASE_CREDENTIALS_PATH', 'firebase-config.json'))
     if os.path.exists(cred_path):
-        cred = credentials.Certificate(cred_path)
+        import json
+        with open(cred_path, 'r') as f:
+            config = json.load(f)
+            config['private_key'] = config['private_key'].replace('\\n', '\n')
+            cred = credentials.Certificate(config)
     else:
         # Option 2: Use project config (same as React Native app)
         firebase_config = {
